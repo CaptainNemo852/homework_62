@@ -1,4 +1,7 @@
-.idea
-*sqlite
-venv
 
+
+.idea
+__pycache__
+venv
+*.sqlite
+.DS_Store
