@@ -1,5 +1,5 @@
 from django.contrib import admin
-from webapp.models import Movie, Category, Hall, Seat, Show
+from webapp.models import Movie, Category, Hall, Seat, Show,Discount,Ticket,Booking
 
 
 class MovieAdmin(admin.ModelAdmin):
@@ -12,3 +12,6 @@ admin.site.register(Category)
 admin.site.register(Hall)
 admin.site.register(Seat)
 admin.site.register(Show)
+admin.site.register(Discount)
+admin.site.register(Ticket)
+admin.site.register(Booking)

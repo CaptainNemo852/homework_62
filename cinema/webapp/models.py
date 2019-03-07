@@ -1,4 +1,7 @@
 from django.db import models
+import random
+import string
+from django.conf import settings
 
 
 class Category(models.Model):
@@ -48,3 +51,57 @@ class Show(models.Model):
 
     def __str__(self):
         return 'Сеанс %s, зал %s, начало %s, окончание %s' %(self.movie, self.hall, self.time_start, self.time_finish)
+
+
+
+
+
+class Discount(models.Model):
+    name = models.CharField(max_length=255)
+    discount = models.DecimalField(max_digits=5, decimal_places=2)
+    date_start = models.DateTimeField(null=True, blank=True)
+    date_finish = models.DateTimeField(null=True, blank=True)
+    is_existed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '%s. Скидка: %s. (%s - %s)' % (self.name, self.discount, self.date_start, self.date_finish)
+
+
+class Ticket(models.Model):
+    show = models.ForeignKey(Show, related_name='ticket_show', on_delete=models.PROTECT)
+    seat = models.ForeignKey(Seat, related_name='ticket_seat', on_delete=models.PROTECT)
+    discount = models.ForeignKey(Discount, null=True, blank=True, related_name='ticket_discount', on_delete=models.PROTECT)
+    return_ticket = models.BooleanField(default=False)
+    is_existed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return 'Билет: %s, сеанс: %s, залл :%s' % (self.id, self.show.movie, self.show.hall)
+
+
+def generate_code():
+    code = ""
+    for i in range(0, settings.BOOKING_CODE_LENGTH):
+        code += random.choice(string.digits)
+    return code
+
+
+class Booking(models.Model):
+    STATUS_NEW = 'Новый'
+    STATUS_SOLD = 'Выкуплено'
+    STATUS_CANCELED = 'Отменено'
+
+    STATUS_CHOICES = (
+        (STATUS_NEW, 'Новый'),
+        (STATUS_SOLD, 'Выкуплено'),
+        (STATUS_CANCELED, 'Отмена')
+    )
+
+    code = models.CharField(max_length=10, unique_for_date='created_at', default=generate_code, editable=False)
+    show = models.ForeignKey(Show, related_name='booking_show', on_delete=models.PROTECT)
+    seats = models.ManyToManyField(Seat, related_name='booking_seats')
+    status = models.CharField(max_length=255, default=STATUS_NEW, choices=STATUS_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return 'Код бронирования - %s, статус: %s, Срок:%s- %s' % (self.code, self.status, self.created_at, self.updated_at)
